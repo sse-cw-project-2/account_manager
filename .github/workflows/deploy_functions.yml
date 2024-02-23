@@ -97,8 +97,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_check_email_in_use
-        env:
-          SUPABASE_URL: projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_URL=projects/your-project-id/secrets/SUPABASE_URL/version/latest
+          --set-secrets=SUPABASE_KEY=projects/your-project-id/secrets/SUPABASE_KEY/version/latest
 
       - name: Deploy api_get_account_info
         run: |
@@ -108,8 +108,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_get_account_info
-        env:
-          SUPABASE_URL: projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_URL=projects/your-project-id/secrets/SUPABASE_URL/version/latest
+          --set-secrets=SUPABASE_KEY=projects/your-project-id/secrets/SUPABASE_KEY/version/latest
 
       - name: Deploy api_create_account
         run: |
@@ -119,8 +119,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_create_account
-        env:
-          SUPABASE_URL: projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_URL=projects/your-project-id/secrets/SUPABASE_URL/version/latest
+          --set-secrets=SUPABASE_KEY=projects/your-project-id/secrets/SUPABASE_KEY/version/latest
 
       - name: Deploy api_update_account
         run: |
@@ -130,8 +130,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_update_account
-        env:
-          SUPABASE_URL: projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_URL=projects/your-project-id/secrets/SUPABASE_URL/version/latest
+          --set-secrets=SUPABASE_KEY=projects/your-project-id/secrets/SUPABASE_KEY/version/latest
 
       - name: Deploy api_delete_account
         run: |
@@ -141,5 +141,5 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_delete_account
-        env:
-          SUPABASE_URL: projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_URL=projects/your-project-id/secrets/SUPABASE_URL/version/latest
+          --set-secrets=SUPABASE_KEY=projects/your-project-id/secrets/SUPABASE_KEY/version/latest
