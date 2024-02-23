@@ -97,8 +97,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_check_email_in_use
-          --set-secrets=SUPABASE_URL=projects/projects/950999785047/secrets/SUPABASE_URL
-          --set-secrets=SUPABASE_KEY=projects/projects/950999785047/secrets/SUPABASE_KEY
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
 
       - name: Deploy api_get_account_info
         run: |
@@ -108,8 +108,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_get_account_info
-          --set-secrets=SUPABASE_URL=projectsprojects/950999785047/secrets/SUPABASE_URL
-          --set-secrets=SUPABASE_KEY=projects/projects/950999785047/secrets/SUPABASE_KEY
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
 
       - name: Deploy api_create_account
         run: |
@@ -119,8 +119,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_create_account
-          --set-secrets=SUPABASE_URL=projects/projects/950999785047/secrets/SUPABASE_URL
-          --set-secrets=SUPABASE_KEY=projects/projects/950999785047/secrets/SUPABASE_KEY
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
 
       - name: Deploy api_update_account
         run: |
@@ -130,8 +130,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_update_account
-          --set-secrets=SUPABASE_URL=projects/projects/950999785047/secrets/SUPABASE_URL
-          --set-secrets=SUPABASE_KEY=projects/projects/950999785047/secrets/SUPABASE_KEY
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
 
       - name: Deploy api_delete_account
         run: |
@@ -141,5 +141,5 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_delete_account
-          --set-secrets=SUPABASE_URL=projects/projects/950999785047/secrets/SUPABASE_URL
-          --set-secrets=SUPABASE_KEY=projects/projects/950999785047/secrets/SUPABASE_KEY
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
