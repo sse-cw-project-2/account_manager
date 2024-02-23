@@ -89,9 +89,9 @@ jobs:
       - name: Confirm Google Cloud Authentication
         run: gcloud auth list
 
-      - name: Deploy api_check_email_in_use 
+      - name: Deploy api_check_email_in_use
         run: |
-          gcloud functions deploy api_check_email_in_use  \
+          gcloud functions deploy api_check_email_in_use \
           --runtime python39 \
           --trigger-http \
           --allow-unauthenticated \
@@ -99,10 +99,10 @@ jobs:
           --entry-point api_check_email_in_use
         env:
           SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
-        
-      - name: Deploy api_get_account_info 
+
+      - name: Deploy api_get_account_info
         run: |
-          gcloud functions deploy api_get_account_info  \
+          gcloud functions deploy api_get_account_info \
           --runtime python39 \
           --trigger-http \
           --allow-unauthenticated \
@@ -111,9 +111,9 @@ jobs:
         env:
           SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
 
-      - name: Deploy api_create_account 
+      - name: Deploy api_create_account
         run: |
-          gcloud functions deploy api_create_account  \
+          gcloud functions deploy api_create_account \
           --runtime python39 \
           --trigger-http \
           --allow-unauthenticated \
@@ -122,9 +122,9 @@ jobs:
         env:
           SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
 
-      - name: Deploy api_update_account 
+      - name: Deploy api_update_account
         run: |
-          gcloud functions deploy api_update_account  \
+          gcloud functions deploy api_update_account \
           --runtime python39 \
           --trigger-http \
           --allow-unauthenticated \
@@ -132,14 +132,14 @@ jobs:
           --entry-point api_update_account
         env:
           SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
-      
-      - name: Deploy api_delete_account 
+
+      - name: Deploy api_delete_account
         run: |
-            gcloud functions deploy api_delete_account  \
-            --runtime python39 \
-            --trigger-http \
-            --allow-unauthenticated \
-            --source . \
-            --entry-point api_delete_account
-          env:
-            SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
+          gcloud functions deploy api_delete_account \
+          --runtime python39 \
+          --trigger-http \
+          --allow-unauthenticated \
+          --source . \
+          --entry-point api_delete_account
+        env:
+          SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
