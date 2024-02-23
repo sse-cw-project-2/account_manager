@@ -97,6 +97,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_check_email_in_use
+        env:
+          SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
         
       - name: Deploy api_get_account_info 
         run: |
@@ -106,6 +108,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_get_account_info
+        env:
+          SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
 
       - name: Deploy api_create_account 
         run: |
@@ -115,6 +119,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_create_account
+        env:
+          SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
 
       - name: Deploy api_update_account 
         run: |
@@ -124,6 +130,8 @@ jobs:
           --allow-unauthenticated \
           --source . \
           --entry-point api_update_account
+        env:
+          SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
       
       - name: Deploy api_delete_account 
         run: |
@@ -133,3 +141,5 @@ jobs:
             --allow-unauthenticated \
             --source . \
             --entry-point api_delete_account
+          env:
+            SUPABASE_URL: projects/still-descent-414311/secrets/supabase-url/versions/latest
