@@ -69,23 +69,24 @@ jobs:
   #     run: pytest api/tests/integration/*.py
   
     
-
   deploy-functions:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2.1.0
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+
       - name: Set up Google Cloud
         uses: google-github-actions/setup-gcloud@v2.1.0
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
-          
+
       - name: Confirm Google Cloud Authentication
         run: gcloud auth list
 
@@ -96,8 +97,8 @@ jobs:
           --trigger-http \
           --allow-unauthenticated \
           --source . \
-          --entry-point api_check_email_in_use
-          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --entry-point api_check_email_in_use \
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL \
           --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
 
       - name: Deploy api_get_account_info
@@ -107,8 +108,8 @@ jobs:
           --trigger-http \
           --allow-unauthenticated \
           --source . \
-          --entry-point api_get_account_info
-          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --entry-point api_get_account_info \
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL \
           --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
 
       - name: Deploy api_create_account
@@ -118,8 +119,8 @@ jobs:
           --trigger-http \
           --allow-unauthenticated \
           --source . \
-          --entry-point api_create_account
-          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --entry-point api_create_account \
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL \
           --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
 
       - name: Deploy api_update_account
@@ -129,8 +130,8 @@ jobs:
           --trigger-http \
           --allow-unauthenticated \
           --source . \
-          --entry-point api_update_account
-          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --entry-point api_update_account \
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL \
           --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
 
       - name: Deploy api_delete_account
@@ -140,6 +141,6 @@ jobs:
           --trigger-http \
           --allow-unauthenticated \
           --source . \
-          --entry-point api_delete_account
-          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL
+          --entry-point api_delete_account \
+          --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL \
           --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY
