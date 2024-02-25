@@ -16,7 +16,7 @@
 ####################################################################################################
 
 
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os

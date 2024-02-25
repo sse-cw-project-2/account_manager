@@ -9,65 +9,67 @@ on:
     types: [closed]
 
 jobs:
-  # python-formatting:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v3
-  #   - name: Setup Python
-  #     uses: actions/setup-python@v4
-  #     with:
-  #       python-version: 3.9
-  #   - name: Install dependencies
-  #     run: pip install -r requirements.txt
-  #   - name: Set PYTHONPATH to the api directory
-  #     run: echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
-  #   - name: Find all Python files excluding the .venv directory
-  #     run: find . -type f -name "*.py" ! -path "./.venv/*" -print0 > python_files.tmp
-  #   - name: Run black
-  #     run: xargs -0 black < python_files.tmp
-  #   - name: Run flake8 (with adjustments to allow for black's formatting)
-  #     run: xargs -0 flake8 < python_files.tmp --extend-ignore E203  --extend-ignore E722 --max-line-length 120
-  #   - name: Run mypy
-  #     run: |
-  #       xargs -0 mypy --ignore-missing-imports < python_files.tmp
-  #   - name: Clean up
-  #     run: rm -f python_files.tmp
+  auto-formatting:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install black
+      run: pip install black
+    - name: Run black
+      run: black *.py
 
-  # testing:
-  #   runs-on: ubuntu-latest
-  #   needs: python-formatting
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v3
-  #   - name: Setup Python
-  #     uses: actions/setup-python@v4
-  #     with:
-  #       python-version: 3.9
-  #   - name: Set environment variables
-  #     env:
-  #       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-  #       SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-  #     run: |
-  #       echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
-  #       echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> $GITHUB_ENV
-  #   - name: Set PYTHONPATH to the api directory
-  #     run: | 
-  #       echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
-  #   - name: List Python Modules in PYTHONPATH
-  #     run: |
-  #       python list_python_modules.py
-  #   - name: Install dependencies
-  #     run: pip install -r requirements.txt
-  #   - name: Run unit tests
-  #     run: | 
-  #       pytest api/tests/unit/routes/*.py
-  #       pytest api/tests/unit/services/*.py
-  #       pytest api/tests/unit/models/*.py
-  #       pytest api/tests/unit/utils/*.py
-  #   - name: Run integration tests
-  #     run: pytest api/tests/integration/*.py
-  
+  format-checking:
+    needs: auto-formatting
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Run flake8 (with adjustments to allow for black's formatting)
+      run: flake8 *.py --extend-ignore E203  --extend-ignore E722 --max-line-length 120
+   
+  type-checking:
+    needs: auto-formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run mypy
+        run: |
+          mypy *.py
+        
+  testing:
+    runs-on: ubuntu-latest
+    needs: [format-checking, type-checking]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Run unit tests using pytest with coverage
+      run: | 
+        pytest --cov=. 
     
   deploy-functions:
     runs-on: ubuntu-latest
