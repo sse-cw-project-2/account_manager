@@ -64,3 +64,4 @@ typing_extensions==4.9.0
 urllib3==2.2.1
 websockets==11.0.3
 Werkzeug==3.0.1
+functions_framework==3.5.0
