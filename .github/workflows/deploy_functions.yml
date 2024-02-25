@@ -9,22 +9,7 @@ on:
     types: [closed]
 
 jobs:
-  auto-formatting:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.9
-    - name: Install black
-      run: pip install black
-    - name: Run black
-      run: black *.py
-
   format-checking:
-    needs: auto-formatting
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -39,7 +24,6 @@ jobs:
       run: flake8 *.py --extend-ignore E203  --extend-ignore E722 --max-line-length 120
    
   type-checking:
-    needs: auto-formatting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
