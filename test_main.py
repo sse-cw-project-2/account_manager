@@ -566,9 +566,14 @@ class TestCreateAccount(unittest.TestCase):
 
         user_id, message = create_account(
             {
+                "function": "create",
                 "object_type": "artist",
-                "identifier": "email@example.com",
-                "attributes": {"name": True, "genre": True},
+                "identifier": "testartist@example.com",
+                "attributes": {
+                    "email": "testartist@example.com",
+                    "username": "testartist",
+                    "location": "Sample Location"
+                }
             }
         )
 
@@ -580,7 +585,16 @@ class TestCreateAccount(unittest.TestCase):
         mock_validate.return_value = (False, "Invalid request")
 
         user_id, message = create_account(
-            {"object_type": "invalid_type", "identifier": "", "attributes": {}}
+            {
+                "function": "create",
+                "object_type": "invalid_type",
+                "identifier": "testvenue@example.com",
+                "attributes": {
+                    "email": "testvenue@example.com",
+                    "username": "testvenue",
+                    "location": "Sample Location"
+                }
+            }
         )
 
         self.assertIsNone(user_id)
@@ -596,9 +610,14 @@ class TestCreateAccount(unittest.TestCase):
 
         user_id, message = create_account(
             {
-                "object_type": "artist",
-                "identifier": "email@example.com",
-                "attributes": {"name": True},
+                "function": "create",
+                "object_type": "venue",
+                "identifier": "testvenue@example.com",
+                "attributes": {
+                    "email": "testvenue@example.com",
+                    "username": "testvenue",
+                    "location": "Sample Location"
+                }
             }
         )
 
@@ -615,9 +634,14 @@ class TestCreateAccount(unittest.TestCase):
 
         user_id, message = create_account(
             {
-                "object_type": "artist",
-                "identifier": "email@example.com",
-                "attributes": {"name": True},
+                "function": "create",
+                "object_type": "venue",
+                "identifier": "testvenue@example.com",
+                "attributes": {
+                    "email": "testvenue@example.com",
+                    "username": "testvenue",
+                    "location": "Sample Location"
+                }
             }
         )
 
