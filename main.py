@@ -222,7 +222,10 @@ def check_required_attributes(validation_attributes, object_type):
     required_attributes = set(attributes_schema.get(object_type, [])) - {"user_id"}
 
     if object_type not in attributes_schema:
-        return False, f"Invalid object type '{object_type}'. Must be one of {list(attributes_schema.keys())}."
+        return (
+            False,
+            f"Invalid object type '{object_type}'. Must be one of {list(attributes_schema.keys())}.",
+        )
 
     # Check for presence of all required attribute keys, regardless of their values
     missing_attributes = required_attributes - set(validation_attributes.keys())
@@ -395,7 +398,7 @@ def create_account(request):
         print("Insert result:", result.data)
 
         # Example of accessing data or error (Adjust based on actual structure)
-        if hasattr(result, 'error') and result.error:
+        if hasattr(result, "error") and result.error:
             return None, f"An error occurred: {result.error}"
         else:
             user_id = result.data[0].get("user_id")

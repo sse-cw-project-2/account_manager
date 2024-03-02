@@ -571,8 +571,8 @@ class TestCreateAccount(unittest.TestCase):
                 "attributes": {
                     "email": "testartist@example.com",
                     "username": "testartist",
-                    "location": "Sample Location"
-                }
+                    "location": "Sample Location",
+                },
             }
         )
 
@@ -591,13 +591,16 @@ class TestCreateAccount(unittest.TestCase):
                 "attributes": {
                     "email": "testvenue@example.com",
                     "username": "testvenue",
-                    "location": "Sample Location"
-                }
+                    "location": "Sample Location",
+                },
             }
         )
 
         self.assertIsNone(user_id)
-        self.assertEqual(message, "Invalid object type. Must be one of ['venue', 'artist', 'attendee'].")
+        self.assertEqual(
+            message,
+            "Invalid object type. Must be one of ['venue', 'artist', 'attendee'].",
+        )
 
     @patch("main.validate_get_request")
     @patch("main.supabase")
@@ -615,8 +618,8 @@ class TestCreateAccount(unittest.TestCase):
                 "attributes": {
                     "email": "testvenue@example.com",
                     "username": "testvenue",
-                    "location": "Sample Location"
-                }
+                    "location": "Sample Location",
+                },
             }
         )
 
@@ -639,8 +642,8 @@ class TestCreateAccount(unittest.TestCase):
                 "attributes": {
                     "email": "testvenue@example.com",
                     "username": "testvenue",
-                    "location": "Sample Location"
-                }
+                    "location": "Sample Location",
+                },
             }
         )
 
