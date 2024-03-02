@@ -587,6 +587,9 @@ def api_get_account_info(request):
     if not req_data:
         return jsonify({"error": "Invalid or missing JSON payload"}), 400
 
+    if "function" not in req_data or req_data["function"] != "get":
+        return jsonify({"error": "API only handles get requests"}), 400
+
     # Call function
     result = get_account_info(req_data)
 
@@ -607,8 +610,16 @@ def api_get_account_info(request):
 
 @functions_framework.http
 def api_create_account(request):
-    request_data = request.json
-    user_id, message = create_account(request_data)
+    req_data = request.json
+
+    # Check a valid payload was received
+    if not req_data:
+        return jsonify({"error": "Invalid or missing JSON payload"}), 400
+
+    if "function" not in req_data or req_data["function"] != "create":
+        return jsonify({"error": "API only handles create requests"}), 400
+
+    user_id, message = create_account(req_data)
     if user_id:
         return jsonify({"user_id": user_id, "message": message}), 200
     else:
@@ -617,8 +628,15 @@ def api_create_account(request):
 
 @functions_framework.http
 def api_update_account(request):
-    request_data = request.json
-    success, message = update_account(request_data)
+    req_data = request.json
+
+    if not req_data:
+        return jsonify({"error": "Invalid or missing JSON payload"}), 400
+
+    if "function" not in req_data or req_data["function"] != "update":
+        return jsonify({"error": "API only handles update requests"}), 400
+
+    success, message = update_account(req_data)
     if success:
         return jsonify({"message": message}), 200
     else:
@@ -627,8 +645,15 @@ def api_update_account(request):
 
 @functions_framework.http
 def api_delete_account(request):
-    request_data = request.json
-    success, message = delete_account(request_data)
+    req_data = request.json
+
+    if not req_data:
+        return jsonify({"error": "Invalid or missing JSON payload"}), 400
+
+    if "function" not in req_data or req_data["function"] != "delete":
+        return jsonify({"error": "API only handles delete requests"}), 400
+
+    success, message = delete_account(req_data)
     if success:
         return jsonify({"message": message}), 200
     else:
