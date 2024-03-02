@@ -256,11 +256,11 @@ def get_account_info(request):
     account_type = request.get("object_type")
     email = request["identifier"]
     attributes_to_fetch = [
-        attr for attr, include in request.get("attributes", {}).items() if include
+        attr for attr, include in request.get("attributes", {}).items() if include == "true"
     ]
 
     # Construct the attributes string for the query
-    attributes = ", ".join([f'"{attr}"' for attr in attributes_to_fetch])
+    attributes = ", ".join(attributes_to_fetch)
 
     try:
         data = (
@@ -397,7 +397,6 @@ def create_account(request):
         print("Raw result:", result)
         print("Insert result:", result.data)
 
-        # Example of accessing data or error (Adjust based on actual structure)
         if hasattr(result, "error") and result.error:
             return None, f"An error occurred: {result.error}"
         else:
@@ -446,9 +445,6 @@ def update_account(request):
     Returns:
         A tuple containing a boolean indicating success and a message.
     """
-    # Assume validate_request is a function that validates the incoming request.
-    # This should check that the request structure matches the expected schema
-    # and that the identifier is valid for the specified object_type.
     valid, validation_message = validate_request(request)
     if not valid:
         return False, validation_message
@@ -470,12 +466,12 @@ def update_account(request):
         query = (
             supabase.table(object_type + "s")
             .update(data_to_update)
-            .eq("identifier_column_name", identifier)
+            .eq("email", identifier)
         )
         result = query.execute()
 
         # Check if the update was successful
-        if result.error:
+        if hasattr(result, "error") and result.error:
             return False, f"An error occurred: {result.error}"
         else:
             return True, "Account update was successful."
@@ -533,12 +529,12 @@ def delete_account(request):
         result = (
             supabase.table(object_type + "s")
             .delete()
-            .eq("identifier_column_name", identifier)
+            .eq("email", identifier)
             .execute()
         )
 
         # Check if the delete operation was successful
-        if result.error:
+        if hasattr(result, "error") and result.error:
             return False, f"An error occurred: {result.error}"
         else:
             return True, "Account deletion was successful."
