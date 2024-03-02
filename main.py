@@ -97,7 +97,7 @@ def check_email_in_use(email):
             return {
                 "account_type": data.data[0]["account_type"],
                 "user_id": data.data[0]["user_id"],
-                "message": "Email is already in use."
+                "message": "Email is already in use.",
             }
         else:
             # If no data is found, the email is not in use
@@ -257,7 +257,9 @@ def get_account_info(request):
     account_type = request.get("object_type")
     email = request["identifier"]
     attributes_to_fetch = [
-        attr for attr, include in request.get("attributes", {}).items() if include == True
+        attr
+        for attr, include in request.get("attributes", {}).items()
+        if include
     ]
 
     try:
@@ -388,15 +390,17 @@ def create_account(request):
     data_to_insert = {key: value for key, value in attributes.items()}
 
     try:
-        result, error = supabase.table(object_type + "s").insert(data_to_insert).execute()
+        result, error = (
+            supabase.table(object_type + "s").insert(data_to_insert).execute()
+        )
 
         # Since 'result' and 'error' are tuples, unpack them correctly
         result_key, result_value = result
         error_key, error_value = error
 
         # Check the content of the 'result' tuple
-        if result_key == 'data' and result_value:
-            user_id = result_value[0].get('user_id')
+        if result_key == "data" and result_value:
+            user_id = result_value[0].get("user_id")
             return user_id, "Account creation was successful."
         elif error_value:
             # Now checking the error_value for actual error content
@@ -475,10 +479,16 @@ def update_account(request):
         if result.data:
             # Compare the updated attributes to the expected values
             updated_attributes = result.data[0]
-            if all(updated_attributes[key] == value for key, value in data_to_update.items()):
+            if all(
+                updated_attributes[key] == value
+                for key, value in data_to_update.items()
+            ):
                 return True, "Account update was successful."
             else:
-                return False, "Failed to update account: Attributes not updated as expected."
+                return (
+                    False,
+                    "Failed to update account: Attributes not updated as expected.",
+                )
         else:
             return False, "Failed to update account: Record not found."
 
@@ -532,10 +542,7 @@ def delete_account(request):
     try:
         # Delete the record from the specified table
         result = (
-            supabase.table(object_type + "s")
-            .delete()
-            .eq("email", identifier)
-            .execute()
+            supabase.table(object_type + "s").delete().eq("email", identifier).execute()
         )
 
         # Assuming result.data contains the number of deleted rows

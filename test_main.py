@@ -60,11 +60,22 @@ class TestCheckEmailInUse(unittest.TestCase):
     def test_email_in_use(self, mock_supabase):
         # Mock the response from Supabase
         mock_supabase.rpc.return_value.execute.return_value.data = [
-            {"account_type": "venue", 'message': 'Email is already in use.', "user_id": "123"}
+            {
+                "account_type": "venue",
+                "message": "Email is already in use.",
+                "user_id": "123",
+            }
         ]
 
         result = check_email_in_use("test@example.com")
-        self.assertEqual(result, {"account_type": "venue", 'message': 'Email is already in use.', "user_id": "123"})
+        self.assertEqual(
+            result,
+            {
+                "account_type": "venue",
+                "message": "Email is already in use.",
+                "user_id": "123",
+            },
+        )
 
     @patch("main.supabase")
     def test_email_not_in_use(self, mock_supabase):
@@ -559,10 +570,19 @@ class TestCreateAccount(unittest.TestCase):
     def test_valid_request(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
-        mock_result.data = [{'user_id': '12345', 'email': 'testartist@example.com',
-                   'username': 'testartist', 'genre': 'Jazz'}]
+        mock_result.data = [
+            {
+                "user_id": "12345",
+                "email": "testartist@example.com",
+                "username": "testartist",
+                "genre": "Jazz",
+            }
+        ]
         mock_result.error = None
-        mock_supabase.table().insert().execute.return_value = (('data', [mock_result]), ('count', None))
+        mock_supabase.table().insert().execute.return_value = (
+            ("data", [mock_result]),
+            ("count", None),
+        )
 
         user_id, message = create_account(
             {
@@ -602,7 +622,6 @@ class TestCreateAccount(unittest.TestCase):
             message,
             "Invalid object type. Must be one of ['venue', 'artist', 'attendee'].",
         )
-
 
     @patch("main.validate_get_request")
     @patch("main.supabase")
@@ -764,7 +783,9 @@ class TestUpdateAccount(unittest.TestCase):
     def test_supabase_update_error(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
-        mock_result.error = "Failed to update account: Attributes not updated as expected."
+        mock_result.error = (
+            "Failed to update account: Attributes not updated as expected."
+        )
         mock_supabase.table().update().eq().execute.return_value = mock_result
 
         request = {
@@ -775,7 +796,9 @@ class TestUpdateAccount(unittest.TestCase):
         success, message = update_account(request)
 
         self.assertFalse(success)
-        self.assertIn("Failed to update account: Attributes not updated as expected.", message)
+        self.assertIn(
+            "Failed to update account: Attributes not updated as expected.", message
+        )
 
     @patch("main.validate_request")
     @patch("main.supabase")
