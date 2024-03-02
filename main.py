@@ -390,12 +390,15 @@ def create_account(request):
         # Insert the data into the specified table
         result = supabase.table(object_type + "s").insert(data_to_insert).execute()
 
-        # Check if the insert was successful
-        if result.error:
+        # Print the raw result to understand its structure
+        print("Raw result:", result)
+        print("Insert result:", result.data)
+
+        # Example of accessing data or error (Adjust based on actual structure)
+        if hasattr(result, 'error') and result.error:
             return None, f"An error occurred: {result.error}"
         else:
-            # Supabase returns the inserted record, including the 'user_id'
-            user_id = result.data[0]["user_id"]
+            user_id = result.data[0].get("user_id")
             return user_id, "Account creation was successful."
     except Exception as e:
         return None, f"An exception occurred: {str(e)}"
