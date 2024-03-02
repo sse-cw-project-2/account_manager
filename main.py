@@ -260,7 +260,7 @@ def get_account_info(request):
     ]
 
     # Construct the attributes string for the query
-    attributes = ", ".join(attributes_to_fetch)
+    attributes = ", ".join([f'"{attr}"' for attr in attributes_to_fetch])
 
     try:
         data = (
