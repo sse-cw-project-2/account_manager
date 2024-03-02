@@ -518,9 +518,7 @@ def delete_account(request):
     Returns:
         A tuple containing a boolean indicating success and a message.
     """
-    # Assume validate_request is a function that validates the incoming request.
-    # This should check that the request structure matches the expected schema
-    # and that the identifier is valid for the specified object_type.
+
     valid, validation_message = validate_request(request)
     if not valid:
         return False, validation_message
@@ -537,12 +535,11 @@ def delete_account(request):
             .execute()
         )
 
-        # Check if the delete operation was successful
-        if hasattr(result, "error") and result.error:
-            # Return the error message
-            return False, f"An error occurred: {result.error}"
-        else:
+        # Assuming result.data contains the number of deleted rows
+        if result.data and result.data.get("deleted", 0) > 0:
             return True, "Account deletion was successful."
+        else:
+            return False, "Account not found or already deleted."
     except Exception as e:
         return False, f"An exception occurred: {str(e)}"
 

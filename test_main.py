@@ -892,10 +892,12 @@ class TestDeleteAccount(unittest.TestCase):
         # Setup mock responses
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
+        mock_result.data = {"deleted": 1}
         mock_result.error = None
         mock_supabase.table().delete().eq().execute.return_value = mock_result
 
         request = {
+            "function": "delete",
             "object_type": "artist",
             "identifier": "artist_id_123",
         }
@@ -919,6 +921,7 @@ class TestDeleteAccount(unittest.TestCase):
     def test_supabase_delete_error(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
+        mock_result.data = {"deleted": 0}
         mock_result.error = "Supabase error"
         mock_supabase.table().delete().eq().execute.return_value = mock_result
 
@@ -930,7 +933,7 @@ class TestDeleteAccount(unittest.TestCase):
         success, message = delete_account(request)
 
         self.assertFalse(success)
-        self.assertIn("An error occurred: Supabase error", message)
+        self.assertIn("Account not found or already deleted.", message)
 
     @patch("main.validate_request")
     @patch("main.supabase")
