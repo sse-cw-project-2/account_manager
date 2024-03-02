@@ -373,7 +373,7 @@ def create_account(request):
     Returns:
         A tuple containing the user id and a message explaining whether the request was successful.
     """
-    valid, validation_message = validate_get_request(request)
+    valid, validation_message = validate_create_request(request)
     if not valid:
         return None, validation_message
 
@@ -381,7 +381,7 @@ def create_account(request):
     attributes = request["attributes"]
 
     # Construct the data to insert. Supabase automatically assigns a UUID.
-    data_to_insert = {key: value for key, value in attributes.items() if value is True}
+    data_to_insert = {key: value for key, value in attributes.items()}
 
     try:
         # Insert the data into the specified table
