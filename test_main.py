@@ -346,10 +346,9 @@ class TestCheckRequiredAttributes(unittest.TestCase):
     def test_object_type_not_in_schema(self):
         validation_attributes = {"field": "value"}
         object_type = "nonexistent"
-        # Assuming function should return True, as no required attributes are defined for nonexistent object types
-        self.assertTrue(
+        self.assertFalse(
             check_required_attributes(validation_attributes, object_type)[0],
-            "Should return True as there are no defined required attributes to miss.",
+            "Should return False as there are no defined required attributes to request.",
         )
 
     @patch("main.attributes_schema", attributes_schema)
@@ -555,13 +554,13 @@ class TestValidateQueriedAttributes(unittest.TestCase):
 
 
 class TestCreateAccount(unittest.TestCase):
-    @patch("main.validate_get_request")
+    @patch("main.validate_create_request")
     @patch("main.supabase")
     def test_valid_request(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
-        mock_result.error = None
         mock_result.data = [{"user_id": "12345"}]
+        mock_result.error = None
         mock_supabase.table().insert().execute.return_value = mock_result
 
         user_id, message = create_account(
@@ -598,7 +597,7 @@ class TestCreateAccount(unittest.TestCase):
         )
 
         self.assertIsNone(user_id)
-        self.assertEqual(message, "Invalid request")
+        self.assertEqual(message, "Invalid object type. Must be one of ['venue', 'artist', 'attendee'].")
 
     @patch("main.validate_get_request")
     @patch("main.supabase")

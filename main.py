@@ -221,6 +221,9 @@ def check_required_attributes(validation_attributes, object_type):
     # Identify attributes required for the function
     required_attributes = set(attributes_schema.get(object_type, [])) - {"user_id"}
 
+    if object_type not in attributes_schema:
+        return False, f"Invalid object type '{object_type}'. Must be one of {list(attributes_schema.keys())}."
+
     # Check for presence of all required attribute keys, regardless of their values
     missing_attributes = required_attributes - set(validation_attributes.keys())
     if missing_attributes:
@@ -373,7 +376,7 @@ def create_account(request):
     Returns:
         A tuple containing the user id and a message explaining whether the request was successful.
     """
-    valid, validation_message = validate_create_request(request)
+    valid, validation_message = validate_request(request)
     if not valid:
         return None, validation_message
 
@@ -392,7 +395,7 @@ def create_account(request):
             return None, f"An error occurred: {result.error}"
         else:
             # Supabase returns the inserted record, including the 'user_id'
-            user_id = result.data[0]["user_id"]  # Assuming 'user_id' is the primary key
+            user_id = result.data[0]["user_id"]
             return user_id, "Account creation was successful."
     except Exception as e:
         return None, f"An exception occurred: {str(e)}"
