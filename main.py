@@ -257,16 +257,13 @@ def get_account_info(request):
     account_type = request.get("object_type")
     email = request["identifier"]
     attributes_to_fetch = [
-        attr for attr, include in request.get("attributes", {}).items() if include == "true"
+        attr for attr, include in request.get("attributes", {}).items() if include == True
     ]
-
-    # Construct the attributes string for the query
-    attributes = ", ".join(attributes_to_fetch)
 
     try:
         data = (
             supabase.table(account_type + "s")
-            .select(attributes)
+            .select(", ".join(attributes_to_fetch))
             .eq("email", email)
             .execute()
         )
@@ -391,15 +388,21 @@ def create_account(request):
     data_to_insert = {key: value for key, value in attributes.items()}
 
     try:
-        # Insert the data into the specified table
-        result = supabase.table(object_type + "s").insert(data_to_insert).execute()
+        result, error = supabase.table(object_type + "s").insert(data_to_insert).execute()
 
-        # Check if the insert was successful
-        if "data" in result and result["data"]:
-            user_id = result["data"][0].get("user_id")
+        # Since 'result' and 'error' are tuples, unpack them correctly
+        result_key, result_value = result
+        error_key, error_value = error
+
+        # Check the content of the 'result' tuple
+        if result_key == 'data' and result_value:
+            user_id = result_value[0].get('user_id')
             return user_id, "Account creation was successful."
+        elif error_value:
+            # Now checking the error_value for actual error content
+            return None, f"An error occurred: {error_value}"
         else:
-            return None, "No data returned after insert."
+            return None, "Unexpected response: No data returned after insert."
     except Exception as e:
         return None, f"An exception occurred: {str(e)}"
 
@@ -536,7 +539,7 @@ def delete_account(request):
         )
 
         # Assuming result.data contains the number of deleted rows
-        if result.data and result.data.get("deleted", 0) > 0:
+        if result.data:
             return True, "Account deletion was successful."
         else:
             return False, "Account not found or already deleted."
@@ -662,3 +665,18 @@ def api_delete_account(request):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+request = {
+    "function": "create",
+    "object_type": "artist",
+    "identifier": "testartist21@example.com",
+    "attributes": {
+        "email": "testartist21@example.com",
+        "username": "test21artist",
+        "genre": "Jazz",
+    },
+}
+
+response = create_account(request)
+print(response)
