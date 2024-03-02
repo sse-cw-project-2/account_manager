@@ -97,6 +97,7 @@ def check_email_in_use(email):
             return {
                 "account_type": data.data[0]["account_type"],
                 "user_id": data.data[0]["user_id"],
+                "message": "Email is already in use."
             }
         else:
             # If no data is found, the email is not in use
@@ -393,15 +394,12 @@ def create_account(request):
         # Insert the data into the specified table
         result = supabase.table(object_type + "s").insert(data_to_insert).execute()
 
-        # Print the raw result to understand its structure
-        print("Raw result:", result)
-        print("Insert result:", result.data)
-
-        if hasattr(result, "error") and result.error:
-            return None, f"An error occurred: {result.error}"
-        else:
-            user_id = result.data[0].get("user_id")
+        # Check if the insert was successful
+        if "data" in result and result["data"]:
+            user_id = result["data"][0].get("user_id")
             return user_id, "Account creation was successful."
+        else:
+            return None, "No data returned after insert."
     except Exception as e:
         return None, f"An exception occurred: {str(e)}"
 
@@ -471,10 +469,16 @@ def update_account(request):
         result = query.execute()
 
         # Check if the update was successful
-        if hasattr(result, "error") and result.error:
-            return False, f"An error occurred: {result.error}"
+        if result.data:
+            # Compare the updated attributes to the expected values
+            updated_attributes = result.data[0]
+            if all(updated_attributes[key] == value for key, value in data_to_update.items()):
+                return True, "Account update was successful."
+            else:
+                return False, "Failed to update account: Attributes not updated as expected."
         else:
-            return True, "Account update was successful."
+            return False, "Failed to update account: Record not found."
+
     except Exception as e:
         return False, f"An exception occurred: {str(e)}"
 
@@ -535,6 +539,7 @@ def delete_account(request):
 
         # Check if the delete operation was successful
         if hasattr(result, "error") and result.error:
+            # Return the error message
             return False, f"An error occurred: {result.error}"
         else:
             return True, "Account deletion was successful."
