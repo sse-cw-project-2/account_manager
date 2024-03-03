@@ -37,8 +37,24 @@ non_account_types = [ot for ot in object_types if ot not in account_types]
 attributes_schema = {
     "venue": ["user_id", "venue_name", "email", "street_address", "city", "postcode"],
     "artist": ["user_id", "artist_name", "email", "genres", "spotify_artist_id"],
-    "attendee": ["user_id", "first_name", "last_name", "email", "street_address", "city", "postcode"],
-    "event": ["event_id", "venue_id", "event_name", "date_time", "total_tickets", "sold_tickets", "artist_ids"],
+    "attendee": [
+        "user_id",
+        "first_name",
+        "last_name",
+        "email",
+        "street_address",
+        "city",
+        "postcode",
+    ],
+    "event": [
+        "event_id",
+        "venue_id",
+        "event_name",
+        "date_time",
+        "total_tickets",
+        "sold_tickets",
+        "artist_ids",
+    ],
     "ticket": ["ticket_id", "event_id", "attendee_id", "price", "redeemed", "status"],
 }
 # Attribute keys are paired with boolean values for get requests, or the value to be added to the
@@ -138,7 +154,7 @@ def is_valid_spotify_user_id(identifier):
         bool: True if the identifier is a valid Spotify user ID, else False.
     """
     # Define the pattern for a valid Spotify user ID: alphanumeric, hyphens, and underscores
-    pattern = r'^[a-zA-Z0-9-_]+$'
+    pattern = r"^[a-zA-Z0-9-_]+$"
 
     # Check if the identifier matches the pattern
     if not re.match(pattern, identifier):
@@ -234,17 +250,22 @@ def check_for_extra_attributes(validation_attributes, object_type):
     """
     # Identify attributes required for the function
     total_attributes = set(attributes_schema.get(object_type, []))
-    required_attributes = total_attributes - {'spotify_artist_id'}
+    required_attributes = total_attributes - {"spotify_artist_id"}
 
     # Guard against non-defined attributes
-    undefined_attributes = [key for key in validation_attributes.keys() if key not in total_attributes]
+    undefined_attributes = [
+        key for key in validation_attributes.keys() if key not in total_attributes
+    ]
     if undefined_attributes:
-        return False, f"Additional, undefined attributes cannot be specified: {', '.join(undefined_attributes)}. Total attributes: {total_attributes}"
+        return (
+            False,
+            f"Additional, undefined attributes cannot be specified: {', '.join(undefined_attributes)}. Total attributes: {total_attributes}",
+        )
 
     # Check for required attributes not defined in request
     attributes = [key in required_attributes for key in validation_attributes.keys()]
     if not all(attributes):
-        return False, f"Every specified attribute must have a value."
+        return False, "Every specified attribute must have a value."
 
     return True, ""
 
@@ -264,7 +285,9 @@ def check_required_attributes(validation_attributes, object_type):
             or False and an error message if not.
     """
     # Identify attributes that necessarily require a value
-    required_attributes = set(attributes_schema.get(object_type, [])) - {"spotify_artist_id"}
+    required_attributes = set(attributes_schema.get(object_type, [])) - {
+        "spotify_artist_id"
+    }
 
     # Check for fields not in the database
     if object_type not in attributes_schema:
@@ -302,9 +325,7 @@ def get_account_info(request):
     account_type = request.get("object_type")
     email = request["identifier"]
     attributes_to_fetch = [
-        attr
-        for attr, include in request.get("attributes", {}).items()
-        if include
+        attr for attr, include in request.get("attributes", {}).items() if include
     ]
 
     try:

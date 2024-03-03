@@ -113,7 +113,9 @@ class TestSpotifyIdValidation(unittest.TestCase):
         self.assertFalse(is_valid_spotify_user_id("4a0SG"))
 
     def test_too_long_url(self):
-        self.assertFalse(is_valid_spotify_user_id("4a0SGxCPaf438bo29Va38bHtiFBo2Hti0SGxCFBf9VPa"))
+        self.assertFalse(
+            is_valid_spotify_user_id("4a0SGxCPaf438bo29Va38bHtiFBo2Hti0SGxCFBf9VPa")
+        )
 
 
 class TestGoogleIdValidation(unittest.TestCase):
@@ -127,7 +129,11 @@ class TestGoogleIdValidation(unittest.TestCase):
         self.assertFalse(is_valid_auth_id("1234"))
 
     def test_too_long_url(self):
-        self.assertFalse(is_valid_auth_id("14658358605733597088967146583586057335970889671465835860573359708896714658358605733597088967"))
+        self.assertFalse(
+            is_valid_auth_id(
+                "14658358605733597088967146583586057335970889671465835860573359708896714658358605733597088967"
+            )
+        )
 
 
 class TestValidateRequest(unittest.TestCase):
@@ -305,11 +311,41 @@ class TestCheckForExtraAttributes(unittest.TestCase):
 
     # Mock attributes_schema for testing
     attributes_schema = {
-        "venue": ["user_id", "venue_name", "email", "street_address", "city", "postcode"],
+        "venue": [
+            "user_id",
+            "venue_name",
+            "email",
+            "street_address",
+            "city",
+            "postcode",
+        ],
         "artist": ["user_id", "artist_name", "email", "genres", "spotify_artist_id"],
-        "attendee": ["user_id", "first_name", "last_name", "email", "street_address", "city", "postcode"],
-        "event": ["event_id", "venue_id", "event_name", "date_time", "total_tickets", "sold_tickets", "artist_ids"],
-        "ticket": ["ticket_id", "event_id", "attendee_id", "price", "redeemed", "status"],
+        "attendee": [
+            "user_id",
+            "first_name",
+            "last_name",
+            "email",
+            "street_address",
+            "city",
+            "postcode",
+        ],
+        "event": [
+            "event_id",
+            "venue_id",
+            "event_name",
+            "date_time",
+            "total_tickets",
+            "sold_tickets",
+            "artist_ids",
+        ],
+        "ticket": [
+            "ticket_id",
+            "event_id",
+            "attendee_id",
+            "price",
+            "redeemed",
+            "status",
+        ],
     }
 
     @patch("main.attributes_schema", attributes_schema)
@@ -332,11 +368,13 @@ class TestCheckForExtraAttributes(unittest.TestCase):
             "email": "testvenue@example.com",
             "street_address": "1 Road Street",
             "postcode": "AB1 2CD",
-            "city": "London"
+            "city": "London",
         }
 
         object_type = "venue"
-        success, message = check_for_extra_attributes(validation_attributes, object_type)
+        success, message = check_for_extra_attributes(
+            validation_attributes, object_type
+        )
 
         # self.assertTrue(success)
         self.assertEqual(message, "")
@@ -635,7 +673,10 @@ class TestCreateAccount(unittest.TestCase):
 
     @patch("main.validate_request")
     def test_invalid_request(self, mock_validate):
-        mock_validate.return_value = (False, "Invalid object type. Must be one of ['venue', 'artist', 'attendee'].")
+        mock_validate.return_value = (
+            False,
+            "Invalid object type. Must be one of ['venue', 'artist', 'attendee'].",
+        )
 
         user_id, message = create_account(
             {
@@ -751,7 +792,13 @@ class TestValidateCreateRequest(unittest.TestCase):
     def test_attributes_without_value(self, mock_extract):
         mock_extract.return_value = (
             "artist",
-            {"user_id": "123456789101112", "artist_name": "Julius", "email": "user@example.com", "genres": "", "spotify_artist_id": "4a0SGxC38bo29VPaHtiFBf"},
+            {
+                "user_id": "123456789101112",
+                "artist_name": "Julius",
+                "email": "user@example.com",
+                "genres": "",
+                "spotify_artist_id": "4a0SGxC38bo29VPaHtiFBf",
+            },
         )
 
         request = {
@@ -763,7 +810,7 @@ class TestValidateCreateRequest(unittest.TestCase):
                 "artist_name": "Julius",
                 "email": "user@example.com",
                 "genres": "",
-                'spotify_artist_id': "4a0SGxC38bo29VPaHtiFBf"
+                "spotify_artist_id": "4a0SGxC38bo29VPaHtiFBf",
             },
         }
         valid, message = validate_create_request(request)
