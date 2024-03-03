@@ -790,6 +790,9 @@ class TestValidateCreateRequest(unittest.TestCase):
                 "email": "user@example.com",
                 "genres": "",
                 "spotify_artist_id": "4a0SGxC38bo29VPaHtiFBf",
+                "street_address": "Julius House, Julius Street",
+                "city": "Juliopolis",
+                "postcode": "AB1 CD2",
             },
         )
 
