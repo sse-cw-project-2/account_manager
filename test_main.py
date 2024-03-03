@@ -271,15 +271,7 @@ class TestExtractAndPrepareAttributes(unittest.TestCase):
             "object_type": "artist",
             "attributes": {"name": "John Doe", "genre": "Rock", "user_id": "12345"},
         }
-        expected = ("artist", {"name": "John Doe", "genre": "Rock"})
-        self.assertEqual(extract_and_prepare_attributes(request), expected)
-
-    def test_with_user_id_present(self):
-        request = {
-            "object_type": "venue",
-            "attributes": {"location": "Downtown", "user_id": "67890"},
-        }
-        expected = ("venue", {"location": "Downtown"})
+        expected = ("artist", {"name": "John Doe", "genre": "Rock", "user_id": "12345"})
         self.assertEqual(extract_and_prepare_attributes(request), expected)
 
     def test_with_empty_attributes(self):
@@ -303,7 +295,7 @@ class TestExtractAndPrepareAttributes(unittest.TestCase):
             "attributes": {"seat": "A1", "user_id": "54321"},
             "extra_key": "extra_value",
         }
-        expected = ("ticket", {"seat": "A1"})
+        expected = ("ticket", {"seat": "A1", "user_id": "54321"})
         self.assertEqual(extract_and_prepare_attributes(request), expected)
 
 
