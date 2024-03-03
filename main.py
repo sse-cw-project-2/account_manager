@@ -323,7 +323,7 @@ def get_account_info(request):
         return {"error": message}
 
     account_type = request.get("object_type")
-    email = request["identifier"]
+    user_id = request["identifier"]
     attributes_to_fetch = [
         attr for attr, include in request.get("attributes", {}).items() if include
     ]
@@ -332,7 +332,7 @@ def get_account_info(request):
         data = (
             supabase.table(account_type + "s")
             .select(", ".join(attributes_to_fetch))
-            .eq("email", email)
+            .eq("user_id", user_id)
             .execute()
         )
         if data.data:
@@ -543,7 +543,7 @@ def update_account(request):
         query = (
             supabase.table(object_type + "s")
             .update(data_to_update)
-            .eq("email", identifier)
+            .eq("user_id", identifier)
         )
         result = query.execute()
 
@@ -614,7 +614,7 @@ def delete_account(request):
     try:
         # Delete the record from the specified table
         result = (
-            supabase.table(object_type + "s").delete().eq("email", identifier).execute()
+            supabase.table(object_type + "s").delete().eq("user_id", identifier).execute()
         )
 
         # Assuming result.data contains the number of deleted rows
@@ -745,17 +745,3 @@ def api_delete_account(request):
 if __name__ == "__main__":
     app.run(debug=True)
 
-
-request = {
-    "function": "create",
-    "object_type": "artist",
-    "identifier": "testartist21@example.com",
-    "attributes": {
-        "email": "testartist21@example.com",
-        "username": "test21artist",
-        "genre": "Jazz",
-    },
-}
-
-response = create_account(request)
-print(response)
