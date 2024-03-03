@@ -257,16 +257,17 @@ def check_for_extra_attributes(validation_attributes, object_type):
         key for key in validation_attributes.keys() if key not in total_attributes
     ]
     if undefined_attributes:
-        return (
-            False,
-            f"Additional, undefined attributes cannot be specified: {', '.join(undefined_attributes)}. \
-            Total attributes: {total_attributes}"
-        )
+        message = "Additional, undefined attributes cannot be specified: "
+        message += ", ".join(undefined_attributes) + ". "
+        message += "Total attributes: " + str(total_attributes)
+        return False, message
 
-    # Check for required attributes not defined in request
-    attributes = [key in required_attributes for key in validation_attributes.keys()]
-    if not all(attributes):
-        return False, "Every specified attribute must have a value."
+    # Check for attributes with empty values
+    empty_value_attributes = [key for key, value in validation_attributes.items() if value == ""]
+
+    if empty_value_attributes:
+        empty_value_attributes_str = ", ".join(empty_value_attributes)
+        return False, f"Cannot specify attributes with empty values: {empty_value_attributes_str}."
 
     return True, ""
 
@@ -285,25 +286,32 @@ def check_required_attributes(validation_attributes, object_type):
         A tuple (bool, str) of True and no message if all required attribute keys are specified,
             or False and an error message if not.
     """
-    # Identify attributes that necessarily require a value
-    required_attributes = set(attributes_schema.get(object_type, [])) - {
-        "spotify_artist_id"
-    }
+    # Identify attributes required for the function
+    total_attributes = set(attributes_schema.get(object_type, []))
+    required_attributes = total_attributes - {"spotify_artist_id"}
 
-    # Check for fields not in the database
-    if object_type not in attributes_schema:
-        return (
-            False,
-            f"Invalid object type '{object_type}'. Must be one of {list(attributes_schema.keys())}.",
-        )
+    # Guard against non-defined attributes
+    undefined_attributes = [
+        key for key in validation_attributes.keys() if key not in total_attributes
+    ]
+    if undefined_attributes:
+        message = "Additional, undefined attributes cannot be specified: "
+        message += ", ".join(undefined_attributes) + "."
+        return False, message
 
-    # Check for presence of all required attribute keys, regardless of their values
-    missing_attributes = required_attributes - set(validation_attributes.keys())
+    # Check for missing required attributes
+    missing_attributes = [key for key in required_attributes if key not in validation_attributes]
+
     if missing_attributes:
-        return (
-            False,
-            f"Missing required attribute keys: {', '.join(missing_attributes)}.",
-        )
+        missing_attributes_str = ", ".join(missing_attributes)
+        return False, f"Missing required attributes: {missing_attributes_str}."
+
+    # Check for attributes with empty values
+    empty_value_attributes = [key for key, value in validation_attributes.items() if value == ""]
+
+    if empty_value_attributes:
+        empty_value_attributes_str = ", ".join(empty_value_attributes)
+        return False, f"Cannot specify attributes with empty values: {empty_value_attributes_str}."
 
     return True, ""
 
@@ -490,13 +498,8 @@ def validate_create_request(request):
     """
     object_type, validation_attributes = extract_and_prepare_attributes(request)
 
-    # Check all required attributes are provided
+    # Check that requirements are met
     valid, message = check_required_attributes(validation_attributes, object_type)
-    if not valid:
-        return False, message
-
-    # Check for extra, undefined attributes
-    valid, message = check_for_extra_attributes(validation_attributes, object_type)
     if not valid:
         return False, message
 

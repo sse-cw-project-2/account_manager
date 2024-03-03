@@ -774,7 +774,7 @@ class TestValidateCreateRequest(unittest.TestCase):
         )
         mock_check_extra.return_value = (
             False,
-            "Additional, undefined attributes cannot be specified.",
+            "Additional, undefined attributes cannot be specified: extra_attr.",
         )
 
         request = {
@@ -785,7 +785,7 @@ class TestValidateCreateRequest(unittest.TestCase):
 
         self.assertFalse(valid)
         self.assertEqual(
-            message, "Additional, undefined attributes cannot be specified."
+            message, "Additional, undefined attributes cannot be specified: extra_attr."
         )
 
     @patch("main.extract_and_prepare_attributes")
@@ -816,7 +816,7 @@ class TestValidateCreateRequest(unittest.TestCase):
         valid, message = validate_create_request(request)
 
         self.assertFalse(valid)
-        self.assertEqual(message, "Every specified attribute must have a value.")
+        self.assertEqual(message, "Cannot specify attributes with empty values: genres.")
 
 
 class TestUpdateAccount(unittest.TestCase):
