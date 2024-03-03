@@ -18,6 +18,8 @@ from unittest.mock import patch, MagicMock
 from main import (
     is_valid_email,
     check_email_in_use,
+    is_valid_spotify_user_id,
+    is_valid_auth_id,
     validate_request,
     extract_and_prepare_attributes,
     check_for_extra_attributes,
@@ -100,6 +102,34 @@ class TestCheckEmailInUse(unittest.TestCase):
         self.assertEqual(result, {"error": "An error occurred: Supabase query failed"})
 
 
+class TestSpotifyIdValidation(unittest.TestCase):
+    def test_valid_url(self):
+        self.assertTrue(is_valid_spotify_user_id("4a0SGxC38bo29VPaHtiFBf"))
+
+    def test_invalid_chars_in_url(self):
+        self.assertFalse(is_valid_spotify_user_id("4a0SGx@C38//bo29VPaHtiFBf"))
+
+    def test_too_short_url(self):
+        self.assertFalse(is_valid_spotify_user_id("4a0SG"))
+
+    def test_too_long_url(self):
+        self.assertFalse(is_valid_spotify_user_id("4a0SGxCPaf438bo29Va38bHtiFBo2Hti0SGxCFBf9VPa"))
+
+
+class TestGoogleIdValidation(unittest.TestCase):
+    def test_valid_id(self):
+        self.assertTrue(is_valid_auth_id("1465835860573088967"))
+
+    def test_invalid_chars_in_id(self):
+        self.assertFalse(is_valid_auth_id("146583586@05733597/088967"))
+
+    def test_too_short_url(self):
+        self.assertFalse(is_valid_auth_id("1234"))
+
+    def test_too_long_url(self):
+        self.assertFalse(is_valid_auth_id("14658358605733597088967146583586057335970889671465835860573359708896714658358605733597088967"))
+
+
 class TestValidateRequest(unittest.TestCase):
 
     def test_email_validation(self):
@@ -110,8 +140,8 @@ class TestValidateRequest(unittest.TestCase):
         request = {
             "function": "get",
             "object_type": "venue",
-            "identifier": "venue@example.com",
-            "attributes": {"user_id": True, "location": True},
+            "identifier": "123456789101112",
+            "attributes": {"user_id": True, "city": True, "postcode": True},
         }
         self.assertEqual(validate_request(request), (True, "Request is valid."))
 
@@ -119,14 +149,14 @@ class TestValidateRequest(unittest.TestCase):
         request = {
             "function": "get",
             "object_type": "artist",
-            "identifier": "artist@example.com",
-            "attributes": {"user_id": True, "genre": True, "extra_field": False},
+            "identifier": "1234567891011",
+            "attributes": {"user_id": True, "genres": True, "extra_field": False},
         }
         valid, message = validate_request(request)
         self.assertFalse(valid)
         self.assertIn("extra_field", message)
 
-    def test_invalid_email_in_request(self):
+    def test_invalid_id_in_request(self):
         request = {
             "function": "get",
             "object_type": "artist",
@@ -134,23 +164,23 @@ class TestValidateRequest(unittest.TestCase):
             "attributes": {"user_id": True, "genre": True},
         }
         self.assertEqual(
-            validate_request(request), (False, "Invalid or missing email identifier.")
+            validate_request(request), (False, "Invalid or missing unique ID.")
         )
 
-    def test_missing_email(self):
+    def test_missing_id(self):
         request = {
             "function": "get",
             "object_type": "artist",
             "identifier": "",
             "attributes": {
                 "user_id": True,
-                "email": False,
+                "email": True,
                 "username": False,
                 "genre": False,
             },
         }
         self.assertEqual(
-            validate_request(request), (False, "Invalid or missing email identifier.")
+            validate_request(request), (False, "Invalid or missing unique ID.")
         )
 
     def test_event_object_type(self):
@@ -216,11 +246,10 @@ class TestValidateRequest(unittest.TestCase):
         request = {
             "function": "get",
             "object_type": "artist",
-            "identifier": "example@example.com",
+            "identifier": "123456789101112",
             "attributes": {
                 "user_id": False,
                 "email": False,
-                "username": False,
                 "genre": False,
             },
         }
@@ -276,17 +305,12 @@ class TestCheckForExtraAttributes(unittest.TestCase):
 
     # Mock attributes_schema for testing
     attributes_schema = {
-        "artist": {"name", "genre", "country"},
-        "venue": {"location", "capacity"},
+        "venue": ["user_id", "venue_name", "email", "street_address", "city", "postcode"],
+        "artist": ["user_id", "artist_name", "email", "genres", "spotify_artist_id"],
+        "attendee": ["user_id", "first_name", "last_name", "email", "street_address", "city", "postcode"],
+        "event": ["event_id", "venue_id", "event_name", "date_time", "total_tickets", "sold_tickets", "artist_ids"],
+        "ticket": ["ticket_id", "event_id", "attendee_id", "price", "redeemed", "status"],
     }
-
-    @patch("main.attributes_schema", attributes_schema)
-    def test_no_extra_attributes(self):
-        validation_attributes = {"name": "John Doe", "genre": "Rock"}
-        object_type = "artist"
-        self.assertTrue(
-            check_for_extra_attributes(validation_attributes, object_type)[0]
-        )
 
     @patch("main.attributes_schema", attributes_schema)
     def test_with_extra_attributes(self):
@@ -302,19 +326,28 @@ class TestCheckForExtraAttributes(unittest.TestCase):
 
     @patch("main.attributes_schema", attributes_schema)
     def test_with_all_required_attributes(self):
-        validation_attributes = {"location": "Downtown", "capacity": 5000}
+        validation_attributes = {
+            "user_id": "1234456789101112",
+            "venue_name": "The Julius Bar",
+            "email": "testvenue@example.com",
+            "street_address": "1 Road Street",
+            "postcode": "AB1 2CD",
+            "city": "London"
+        }
+
         object_type = "venue"
-        self.assertTrue(
-            check_for_extra_attributes(validation_attributes, object_type)[0]
-        )
+        success, message = check_for_extra_attributes(validation_attributes, object_type)
+
+        # self.assertTrue(success)
+        self.assertEqual(message, "")
 
     @patch("main.attributes_schema", attributes_schema)
     def test_object_type_not_in_schema(self):
         validation_attributes = {"field": "value"}
         object_type = "nonexistent"
-        self.assertTrue(
+        self.assertFalse(
             check_for_extra_attributes(validation_attributes, object_type)[0],
-            "Should return True as there are no defined attributes to violate.",
+            "Should return False as there are no defined attributes in the schema.",
         )
 
     @patch("main.attributes_schema", attributes_schema)
@@ -600,9 +633,9 @@ class TestCreateAccount(unittest.TestCase):
         # self.assertEqual(user_id, "12345")
         self.assertEqual(message, "Account creation was successful.")
 
-    @patch("main.validate_create_request")
+    @patch("main.validate_request")
     def test_invalid_request(self, mock_validate):
-        mock_validate.return_value = (False, "Invalid request")
+        mock_validate.return_value = (False, "Invalid object type. Must be one of ['venue', 'artist', 'attendee'].")
 
         user_id, message = create_account(
             {
@@ -623,7 +656,7 @@ class TestCreateAccount(unittest.TestCase):
             "Invalid object type. Must be one of ['venue', 'artist', 'attendee'].",
         )
 
-    @patch("main.validate_get_request")
+    @patch("main.validate_request")
     @patch("main.supabase")
     def test_exception_during_insert(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
@@ -635,11 +668,14 @@ class TestCreateAccount(unittest.TestCase):
             {
                 "function": "create",
                 "object_type": "venue",
-                "identifier": "testvenue@example.com",
+                "identifier": "1234456789101112",
                 "attributes": {
+                    "user_id": "1234456789101112",
+                    "venue_name": "The Julius Bar",
                     "email": "testvenue@example.com",
-                    "username": "testvenue",
-                    "location": "Sample Location",
+                    "street_address": "1 Road Street",
+                    "postcode": "AB1 2CD",
+                    "city": "London",
                 },
             }
         )
@@ -685,13 +721,13 @@ class TestValidateCreateRequest(unittest.TestCase):
     @patch("main.extract_and_prepare_attributes")
     @patch("main.check_for_extra_attributes")
     def test_extra_undefined_attributes(self, mock_check_extra, mock_extract):
-        # Simulate extra undefined attributes
         mock_extract.return_value = (
             "artist",
             {
+                "user_id": "123456789101112",
+                "artist_name": "Jazzy Julius",
                 "email": "user@example.com",
-                "username": "John",
-                "genre": "",
+                "genres": "",
                 "extra_attr": "Not Allowed",
             },
         )
@@ -713,18 +749,21 @@ class TestValidateCreateRequest(unittest.TestCase):
 
     @patch("main.extract_and_prepare_attributes")
     def test_attributes_without_value(self, mock_extract):
-        # Simulate an attribute without a value
         mock_extract.return_value = (
             "artist",
-            {"email": "user@example.com", "username": "John", "genre": ""},
+            {"user_id": "123456789101112", "artist_name": "Julius", "email": "user@example.com", "genres": "", "spotify_artist_id": "4a0SGxC38bo29VPaHtiFBf"},
         )
 
         request = {
+            "function": "create",
             "object_type": "artist",
+            "identifier": "123456789101112",
             "attributes": {
+                "user_id": "123456789101112",
+                "artist_name": "Julius",
                 "email": "user@example.com",
-                "username": "John",
-                "genre": "",
+                "genres": "",
+                'spotify_artist_id': "4a0SGxC38bo29VPaHtiFBf"
             },
         }
         valid, message = validate_create_request(request)

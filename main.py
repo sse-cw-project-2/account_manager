@@ -6,13 +6,11 @@
 #              artists and attendees.
 #
 # Authors: James Hartley, Ankur Desai, Patrick Borman, Julius Gasson, and Vadim Dunaevskiy
-# Date: 2024-02-19
-# Version: 2.1
+# Date: 2024-03-03
+# Version: 2.2
 #
-# Notes: Combined with creation, updating and deletion functions for ease of development.
-#        validate_delete_request function needs to be completed for additional resilience and
-#        verification. Should look into generalising functions to repeat for multiple identifiers
-#        as we have done with tickets.
+# Notes: Updated the functions to handle a more fleshed out database schema, with additional checks
+#   against injection attacks
 ####################################################################################################
 
 
@@ -37,18 +35,10 @@ object_types = ["venue", "artist", "attendee", "event", "ticket"]
 account_types = [ot for ot in object_types if ot not in ["event", "ticket"]]
 non_account_types = [ot for ot in object_types if ot not in account_types]
 attributes_schema = {
-    "venue": ["user_id", "email", "username", "location"],
-    "artist": ["user_id", "email", "username", "genre"],
-    "attendee": ["user_id", "email", "username", "city"],
-    "event": [
-        "event_id",
-        "venue_id",
-        "event_name",
-        "date_time",
-        "total_tickets",
-        "sold_tickets",
-        "artist_ids",
-    ],
+    "venue": ["user_id", "venue_name", "email", "street_address", "city", "postcode"],
+    "artist": ["user_id", "artist_name", "email", "genres", "spotify_artist_id"],
+    "attendee": ["user_id", "first_name", "last_name", "email", "street_address", "city", "postcode"],
+    "event": ["event_id", "venue_id", "event_name", "date_time", "total_tickets", "sold_tickets", "artist_ids"],
     "ticket": ["ticket_id", "event_id", "attendee_id", "price", "redeemed", "status"],
 }
 # Attribute keys are paired with boolean values for get requests, or the value to be added to the
@@ -107,6 +97,60 @@ def check_email_in_use(email):
         return {"error": f"An error occurred: {str(e)}"}
 
 
+def is_valid_auth_id(identifier):
+    """
+    Checks if a string is a valid Google account ID.
+
+    A valid Google account ID is expected to be a numeric string. This function does not
+    enforce a strict length constraint due to the variability in lengths of Google account IDs
+    observed historically and the potential for future changes. However, it checks for a
+    reasonable length range to filter out obviously incorrect IDs.
+
+    Args:
+        identifier (str): A unique Google account ID returned by the Google authenticator API.
+
+    Returns:
+        bool: True if the identifier is a valid Google account ID, else False.
+    """
+    # Check if the identifier is purely numeric
+    if not identifier.isdigit():
+        return False
+
+    # Adjust length range as appropriate.
+    if not (10 <= len(identifier) <= 21):
+        return False
+
+    return True
+
+
+def is_valid_spotify_user_id(identifier):
+    """
+    Checks if a string is a valid Spotify user ID.
+
+    A valid Spotify user ID is expected to be an alphanumeric string that may include
+    hyphens and underscores. This function checks the string against these criteria
+    and validates its length to be within a reasonable range based on typical Spotify user IDs.
+
+    Args:
+        identifier (str): A unique Spotify user ID.
+
+    Returns:
+        bool: True if the identifier is a valid Spotify user ID, else False.
+    """
+    # Define the pattern for a valid Spotify user ID: alphanumeric, hyphens, and underscores
+    pattern = r'^[a-zA-Z0-9-_]+$'
+
+    # Check if the identifier matches the pattern
+    if not re.match(pattern, identifier):
+        return False
+
+    # Need to tweak range as necessary -- seems reasonable for now
+    if not (8 <= len(identifier) <= 32):
+        return False
+
+    return True
+
+
 def validate_request(request):
     """
     Function to catch as many errors in Supabase query requests as possible to avoid wasteful calls
@@ -135,8 +179,8 @@ def validate_request(request):
         return False, f"Invalid object type. Must be one of {account_types}."
 
     # Validate identifier based on object_type
-    if not is_valid_email(identifier):
-        return False, "Invalid or missing email identifier."
+    if not is_valid_auth_id(identifier):
+        return False, "Invalid or missing unique ID."
 
     # Delegate to specific validation functions based on the function type
     if function == "get":
@@ -189,26 +233,26 @@ def check_for_extra_attributes(validation_attributes, object_type):
             present, or False and an error message otherwise.
     """
     # Identify attributes required for the function
-    required_attributes = set(attributes_schema.get(object_type, [])) - {"user_id"}
+    total_attributes = set(attributes_schema.get(object_type, []))
+    required_attributes = total_attributes - {'spotify_artist_id'}
 
-    # Guard against non-defined object_type
-    if not required_attributes and validation_attributes:
-        return (
-            True,
-            "No defined schema for object type, so no attributes are considered extra.",
-        )
+    # Guard against non-defined attributes
+    undefined_attributes = [key for key in validation_attributes.keys() if key not in total_attributes]
+    if undefined_attributes:
+        return False, f"Additional, undefined attributes cannot be specified: {', '.join(undefined_attributes)}. Total attributes: {total_attributes}"
 
-    # Check for attributes not defined in the database
-    if not all(key in required_attributes for key in validation_attributes.keys()):
-        return False, "Additional, undefined attributes cannot be specified."
+    # Check for required attributes not defined in request
+    attributes = [key in required_attributes for key in validation_attributes.keys()]
+    if not all(attributes):
+        return False, f"Every specified attribute must have a value."
 
     return True, ""
 
 
 def check_required_attributes(validation_attributes, object_type):
     """
-    Checks whether the request describes the treatment of all attributes needed to carry out the
-        database function.
+    Checks whether the request describes the treatment of all attributes needed to create a new
+        account row in the database.
 
     Args:
         object_type (str): One of the five types of object being stored in the database,
@@ -219,9 +263,10 @@ def check_required_attributes(validation_attributes, object_type):
         A tuple (bool, str) of True and no message if all required attribute keys are specified,
             or False and an error message if not.
     """
-    # Identify attributes required for the function
-    required_attributes = set(attributes_schema.get(object_type, [])) - {"user_id"}
+    # Identify attributes that necessarily require a value
+    required_attributes = set(attributes_schema.get(object_type, [])) - {"spotify_artist_id"}
 
+    # Check for fields not in the database
     if object_type not in attributes_schema:
         return (
             False,
@@ -431,6 +476,12 @@ def validate_create_request(request):
     # Check for extra, undefined attributes
     valid, message = check_for_extra_attributes(validation_attributes, object_type)
     if not valid:
+        return False, message
+
+    # Protection against injection attacks in the Spotify url
+    spotify_artist_id = validation_attributes.get("spotify_artist_id")
+    if spotify_artist_id and not is_valid_spotify_user_id(spotify_artist_id):
+        message = "Invalid Spotify User ID -- field requires only the string of characters following https://open.spotify.com/artist/"
         return False, message
 
     # Check every specified attribute has a value
