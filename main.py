@@ -229,7 +229,7 @@ def extract_and_prepare_attributes(request):
     object_type = request.get("object_type")
 
     # Filter for objects that can be modified (user_id is uuid assigned by Supabase)
-    validation_attributes = {k: v for k, v in attributes.items() if k != "user_id"}
+    validation_attributes = {k: v for k, v in attributes.items() if k}
 
     return object_type, validation_attributes
 
