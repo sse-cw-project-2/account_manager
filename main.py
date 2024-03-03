@@ -259,7 +259,8 @@ def check_for_extra_attributes(validation_attributes, object_type):
     if undefined_attributes:
         return (
             False,
-            f"Additional, undefined attributes cannot be specified: {', '.join(undefined_attributes)}. Total attributes: {total_attributes}",
+            f"Additional, undefined attributes cannot be specified: {', '.join(undefined_attributes)}. \
+            Total attributes: {total_attributes}"
         )
 
     # Check for required attributes not defined in request
@@ -502,7 +503,8 @@ def validate_create_request(request):
     # Protection against injection attacks in the Spotify url
     spotify_artist_id = validation_attributes.get("spotify_artist_id")
     if spotify_artist_id and not is_valid_spotify_user_id(spotify_artist_id):
-        message = "Invalid Spotify User ID -- field requires only the string of characters following https://open.spotify.com/artist/"
+        message = "Invalid Spotify User ID -- field requires only the string \
+        of characters following https://open.spotify.com/artist/"
         return False, message
 
     # Check every specified attribute has a value
