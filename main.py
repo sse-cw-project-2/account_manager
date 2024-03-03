@@ -250,7 +250,6 @@ def check_for_extra_attributes(validation_attributes, object_type):
     """
     # Identify attributes required for the function
     total_attributes = set(attributes_schema.get(object_type, []))
-    required_attributes = total_attributes - {"spotify_artist_id"}
 
     # Guard against non-defined attributes
     undefined_attributes = [
@@ -263,11 +262,16 @@ def check_for_extra_attributes(validation_attributes, object_type):
         return False, message
 
     # Check for attributes with empty values
-    empty_value_attributes = [key for key, value in validation_attributes.items() if value == ""]
+    empty_value_attributes = [
+        key for key, value in validation_attributes.items() if value == ""
+    ]
 
     if empty_value_attributes:
         empty_value_attributes_str = ", ".join(empty_value_attributes)
-        return False, f"Cannot specify attributes with empty values: {empty_value_attributes_str}."
+        return (
+            False,
+            f"Cannot specify attributes with empty values: {empty_value_attributes_str}.",
+        )
 
     return True, ""
 
@@ -300,18 +304,25 @@ def check_required_attributes(validation_attributes, object_type):
         return False, message
 
     # Check for missing required attributes
-    missing_attributes = [key for key in required_attributes if key not in validation_attributes]
+    missing_attributes = [
+        key for key in required_attributes if key not in validation_attributes
+    ]
 
     if missing_attributes:
         missing_attributes_str = ", ".join(missing_attributes)
         return False, f"Missing required attributes: {missing_attributes_str}."
 
     # Check for attributes with empty values
-    empty_value_attributes = [key for key, value in validation_attributes.items() if value == ""]
+    empty_value_attributes = [
+        key for key, value in validation_attributes.items() if value == ""
+    ]
 
     if empty_value_attributes:
         empty_value_attributes_str = ", ".join(empty_value_attributes)
-        return False, f"Cannot specify attributes with empty values: {empty_value_attributes_str}."
+        return (
+            False,
+            f"Cannot specify attributes with empty values: {empty_value_attributes_str}.",
+        )
 
     return True, ""
 
@@ -619,7 +630,10 @@ def delete_account(request):
     try:
         # Delete the record from the specified table
         result = (
-            supabase.table(object_type + "s").delete().eq("user_id", identifier).execute()
+            supabase.table(object_type + "s")
+            .delete()
+            .eq("user_id", identifier)
+            .execute()
         )
 
         # Assuming result.data contains the number of deleted rows

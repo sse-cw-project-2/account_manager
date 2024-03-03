@@ -816,7 +816,9 @@ class TestValidateCreateRequest(unittest.TestCase):
         valid, message = validate_create_request(request)
 
         self.assertFalse(valid)
-        self.assertEqual(message, "Cannot specify attributes with empty values: genres.")
+        self.assertEqual(
+            message, "Cannot specify attributes with empty values: genres."
+        )
 
 
 class TestUpdateAccount(unittest.TestCase):
