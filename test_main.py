@@ -69,36 +69,31 @@ class TestCheckEmailInUse(unittest.TestCase):
             }
         ]
 
-        result = check_email_in_use("test@example.com")
+        result = check_email_in_use("1234345256345636")
         self.assertEqual(
             result,
             {
                 "account_type": "venue",
-                "message": "Email is already in use.",
+                "message": "Account exists.",
                 "user_id": "123",
             },
         )
 
     @patch("main.supabase")
     def test_email_not_in_use(self, mock_supabase):
-        # Mock the response to indicate no data found
         mock_supabase.rpc.return_value.execute.return_value.data = []
-
-        result = check_email_in_use("new@example.com")
-        self.assertEqual(result, {"message": "Email is not in use."})
+        result = check_email_in_use("1234345256345636")
+        self.assertEqual(result, {"message": "Account does not exist."})
 
     @patch("main.supabase")
     def test_invalid_email_format(self, mock_supabase):
-        # Test for invalid email format, which should not even attempt to query Supabase
         result = check_email_in_use("invalid-email")
-        self.assertEqual(result, {"error": "Invalid email format."})
+        self.assertEqual(result, {"error": "Invalid Google Authentication ID format."})
 
     @patch("main.supabase")
     def test_supabase_error(self, mock_supabase):
-        # Mock an exception being raised during the Supabase call
         mock_supabase.rpc.side_effect = Exception("Supabase query failed")
-
-        result = check_email_in_use("error@example.com")
+        result = check_email_in_use("1234345256345636")
         self.assertEqual(result, {"error": "An error occurred: Supabase query failed"})
 
 

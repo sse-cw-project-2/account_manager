@@ -85,40 +85,33 @@ def is_valid_email(email):
     return re.match(pattern, email) is not None
 
 
-def check_email_in_use(email):
+def check_email_in_use(google_auth_id):
     """
-    Checks if an email is registered in any of the 'venues', 'artists', or 'attendees' tables with a
-        single SQL query.
+    Checks if an account exists in the 'venues', 'artists', or 'attendees' tables using the Google Authentication ID.
 
     Args:
-        email: A string containing the email address being checked.
+        google_auth_id (int): The Google Authentication ID being checked.
 
     Returns:
-        A dictionary with either the user_id if found, a not-in-use message if not found, or an
-            error message.
+        A dictionary with the account information if found, or a message if not found or an error occurs.
     """
-    # Guard against injection attacks in case third party authentication not implemented properly
-    if not is_valid_email(email):
-        return {"error": "Invalid email format."}
-
     try:
-        # Executing the raw SQL query, saved on Supabase as a rpc function
-        # Queries all three tables without making separate api calls
-        data = supabase.rpc("check_email_in_use", {"input_email": email}).execute()
+        # Ensure google_auth_id is valid
+        if not is_valid_auth_id(google_auth_id):
+            return {"error": "Invalid Google Authentication ID format."}
 
-        # Check if any data was returned
+        # Execute the check_account_exists Supabase RPC
+        data = supabase.rpc(
+            "check_account_exists", {"google_auth_id": google_auth_id}
+        ).execute()
+
         if data.data:
-            # Assuming user_id is unique across all tables and found an entry
-            return {
-                "account_type": data.data[0]["account_type"],
-                "user_id": data.data[0]["user_id"],
-                "message": "Email is already in use.",
-            }
+            # Found an entry, return account information
+            return {**data.data[0], "message": "Account exists."}
         else:
-            # If no data is found, the email is not in use
-            return {"message": "Email is not in use."}
+            # If no data is found, the account does not exist
+            return {"message": "Account does not exist."}
     except Exception as e:
-        # Handle any exception that might occur during the API call
         return {"error": f"An error occurred: {str(e)}"}
 
 
@@ -772,3 +765,7 @@ def api_delete_account(request):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+google_auth_id = "1234345256345636"
+message = check_email_in_use(google_auth_id)
+print(message)
