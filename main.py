@@ -666,12 +666,12 @@ def api_check_email_in_use(request):
     req_data = request.get_json()
 
     # Check that an email string has been received
-    if not req_data or "email" not in req_data:
-        return jsonify({"error": "Invalid or missing email in JSON payload"}), 400
+    if not req_data or "id" not in req_data:
+        return jsonify({"error": "Invalid or missing id in JSON payload"}), 400
 
     # Function call
-    email = req_data["email"]
-    result = check_email_in_use(email)
+    id = req_data["id"]
+    result = check_email_in_use(id)
 
     # Handle the possible outcomes
     if "error" in result:
