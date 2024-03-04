@@ -35,7 +35,7 @@ object_types = ["venue", "artist", "attendee", "event", "ticket"]
 account_types = [ot for ot in object_types if ot not in ["event", "ticket"]]
 non_account_types = [ot for ot in object_types if ot not in account_types]
 attributes_schema = {
-    "venue": ["user_id", "venue_name", "email", "street_address", "city", "postcode"],
+    "venue": ["user_id", "venue_name", "email", "street_address", "city", "postcode", "bio"],
     "artist": [
         "user_id",
         "artist_name",
@@ -45,6 +45,7 @@ attributes_schema = {
         "postcode",
         "genres",
         "spotify_artist_id",
+        "bio"
     ],
     "attendee": [
         "user_id",
@@ -54,6 +55,7 @@ attributes_schema = {
         "street_address",
         "city",
         "postcode",
+        "bio"
     ],
     "event": [
         "event_id",
@@ -257,10 +259,10 @@ def check_for_extra_attributes(validation_attributes, object_type):
     undefined_attributes = [
         key for key in validation_attributes.keys() if key not in total_attributes
     ]
+
     if undefined_attributes:
         message = "Additional, undefined attributes cannot be specified: "
         message += ", ".join(undefined_attributes) + ". "
-        message += "Total attributes: " + str(total_attributes)
         return False, message
 
     # Check for attributes with empty values
@@ -294,12 +296,13 @@ def check_required_attributes(validation_attributes, object_type):
     """
     # Identify attributes required for the function
     total_attributes = set(attributes_schema.get(object_type, []))
-    required_attributes = total_attributes - {"spotify_artist_id"}
+    required_attributes = total_attributes - {"spotify_artist_id"} - {"bio"}
 
     # Guard against non-defined attributes
     undefined_attributes = [
         key for key in validation_attributes.keys() if key not in total_attributes
     ]
+
     if undefined_attributes:
         message = "Additional, undefined attributes cannot be specified: "
         message += ", ".join(undefined_attributes) + "."
@@ -765,7 +768,3 @@ def api_delete_account(request):
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-google_auth_id = "1234345256345636"
-message = check_email_in_use(google_auth_id)
-print(message)

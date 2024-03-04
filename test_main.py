@@ -737,10 +737,10 @@ class TestValidateCreateRequest(unittest.TestCase):
     @patch("main.check_required_attributes")
     def test_missing_required_attributes(self, mock_check_required, mock_extract):
         # Simulate missing required attributes
-        mock_extract.return_value = ("artist", {"genre": "Rock"})
+        mock_extract.return_value = ("artist", {"genres": "Rock", "bio": "intersting bio"})
         mock_check_required.return_value = (False, "Missing required attributes.")
 
-        request = {"object_type": "artist", "attributes": {"genre": "Rock"}}
+        request = {"object_type": "artist", "attributes": {"genres": "Rock"}}
         valid, message = validate_create_request(request)
 
         self.assertFalse(valid)
