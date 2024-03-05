@@ -17,6 +17,7 @@
 from flask import Flask, jsonify
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from fuzzywuzzy import process
 import os
 import re
 import functions_framework
@@ -35,7 +36,15 @@ object_types = ["venue", "artist", "attendee", "event", "ticket"]
 account_types = [ot for ot in object_types if ot not in ["event", "ticket"]]
 non_account_types = [ot for ot in object_types if ot not in account_types]
 attributes_schema = {
-    "venue": ["user_id", "venue_name", "email", "street_address", "city", "postcode", "bio"],
+    "venue": [
+        "user_id",
+        "venue_name",
+        "email",
+        "street_address",
+        "city",
+        "postcode",
+        "bio",
+    ],
     "artist": [
         "user_id",
         "artist_name",
@@ -45,7 +54,7 @@ attributes_schema = {
         "postcode",
         "genres",
         "spotify_artist_id",
-        "bio"
+        "bio",
     ],
     "attendee": [
         "user_id",
@@ -55,7 +64,7 @@ attributes_schema = {
         "street_address",
         "city",
         "postcode",
-        "bio"
+        "bio",
     ],
     "event": [
         "event_id",
@@ -664,6 +673,55 @@ def validate_delete_request(request):
     return True, "Request is valid."
 
 
+def find_artist_by_name(search_term: str, threshold=75):
+    """
+    Searches for an artist by name within the database, using fuzzy string matching to accommodate
+        for potential spelling mistakes or variations in the input search term. It returns the
+        closest matching artist's name and user ID if a match is found above the specified threshold.
+
+    Args:
+        search_term (str): The artist name or partial name to search for. This term will be used in
+            the fuzzy matching process to find the closest match among the artist names in the database.
+        threshold (int, optional): The minimum similarity score (out of 100) required to consider a
+            match valid. The default value is 85, meaning the matched artist name must be at least
+            85% similar to the search term to be considered a match.
+
+    Returns:
+        dict: A dictionary containing the `artist_name` and `user_id` of the matched artist, if a match
+            is found with a similarity score above the specified threshold. The dictionary has the
+            following structure: `{"artist_name": str, "user_id": int}`. If no match is found that
+            meets the threshold, `None` is returned.
+
+    Example:
+        >>> find_artist_by_name("Drke")
+        {'artist_name': 'Drake', 'user_id': 1}
+
+        If no artist is found with a similarity score above the threshold, the function returns None:
+
+        >>> find_artist_by_name("Unknown Artist")
+        None
+    """
+    # Fetch artist names and user_ids from the database
+    data = supabase.table("artists").select("user_id, artist_name").execute()
+    artist_info = [(artist["artist_name"], artist["user_id"]) for artist in data.data]
+
+    # Convert list of tuples to just names for fuzzy matching, retaining order
+    artist_names = [info[0] for info in artist_info]
+
+    # Use fuzzy matching to find the closest match to the search_term
+    best_match, score = process.extractOne(search_term, artist_names)
+
+    if score >= threshold:
+        # Find the user_id for the best match
+        matched_artist = next(
+            (info for info in artist_info if info[0] == best_match), None
+        )
+        if matched_artist:
+            # Return both artist_name and user_id
+            return {"artist_name": matched_artist[0], "user_id": matched_artist[1]}
+    return None
+
+
 @functions_framework.http
 def api_check_email_in_use(request):
     req_data = request.get_json()
@@ -764,6 +822,21 @@ def api_delete_account(request):
         return jsonify({"message": message}), 200
     else:
         return jsonify({"error": message}), 400
+
+
+@functions_framework.http
+def api_find_artist_by_name(request):
+    query = request.get_json()
+
+    # Check a valid payload was received
+    if not query or "search_term" not in query:
+        return jsonify({"error": "Invalid or missing JSON payload"}), 400
+
+    matches = find_artist_by_name(query["search_term"])
+    if matches:
+        return jsonify(matches), 200
+    else:
+        return jsonify({"error": "No artists found matching the criteria"}), 404
 
 
 if __name__ == "__main__":

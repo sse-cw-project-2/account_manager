@@ -33,6 +33,7 @@ from main import (
     update_account,
     validate_update_request,
     delete_account,
+    find_artist_by_name,
 )
 
 
@@ -737,7 +738,10 @@ class TestValidateCreateRequest(unittest.TestCase):
     @patch("main.check_required_attributes")
     def test_missing_required_attributes(self, mock_check_required, mock_extract):
         # Simulate missing required attributes
-        mock_extract.return_value = ("artist", {"genres": "Rock", "bio": "intersting bio"})
+        mock_extract.return_value = (
+            "artist",
+            {"genres": "Rock", "bio": "intersting bio"},
+        )
         mock_check_required.return_value = (False, "Missing required attributes.")
 
         request = {"object_type": "artist", "attributes": {"genres": "Rock"}}
@@ -1032,8 +1036,33 @@ class TestDeleteAccount(unittest.TestCase):
         self.assertIn("An exception occurred: Database error", message)
 
 
-# class TestValidateDeleteRequest(unittest.TestCase):
-# TBC when additional logic provided to make deletion more secure
+class TestFindArtistsByName(unittest.TestCase):
+    @patch("main.supabase")
+    def test_exact_match(self, mock_supabase):
+        # Mocking database response
+        mock_supabase.table().select().execute.return_value.data = [
+            {"artist_name": "Drake", "user_id": 1}
+        ]
+        expected = {"artist_name": "Drake", "user_id": 1}
+        result = find_artist_by_name("Drake")
+        self.assertEqual(result, expected)
+
+    @patch("main.supabase")
+    def test_no_match(self, mock_supabase):
+        mock_supabase.table().select().execute.return_value.data = [
+            {"artist_name": "Drake", "user_id": 1}
+        ]
+        result = find_artist_by_name("Metallica")
+        self.assertEqual(result, None)
+
+    @patch("main.supabase")
+    def test_empty_string(self, mock_supabase):
+        mock_supabase.table().select().execute.return_value.data = [
+            {"artist_name": "Drake", "user_id": 1}
+        ]
+        result = find_artist_by_name("")
+        self.assertEqual(result, None)
+
 
 if __name__ == "__main__":
     unittest.main()
