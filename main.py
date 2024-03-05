@@ -17,7 +17,7 @@
 from flask import Flask, jsonify
 from supabase import create_client, Client
 from dotenv import load_dotenv
-from fuzzywuzzy import process
+from fuzzywuzzy import process # type: ignore
 import os
 import re
 import functions_framework
