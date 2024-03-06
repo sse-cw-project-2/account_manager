@@ -21,7 +21,7 @@ from fuzzywuzzy import process  # type: ignore
 import os
 import re
 import functions_framework
-import yagmail
+import yagmail  # type: ignore
 
 app = Flask(__name__)
 
