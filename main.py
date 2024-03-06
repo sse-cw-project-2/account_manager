@@ -21,6 +21,7 @@ from fuzzywuzzy import process  # type: ignore
 import os
 import re
 import functions_framework
+import yagmail
 
 app = Flask(__name__)
 
@@ -80,6 +81,22 @@ attributes_schema = {
 # Attribute keys are paired with boolean values for get requests, or the value to be added to the
 # database otherwise.
 request_template = ["function", "object_type", "identifier", "attributes"]
+
+
+def send_confirmation_email(recipient_email):
+    sender_email = os.environ["BUSINESS_EMAIL"]
+    subject = "Welcome To Jumpstart Events"
+    app_password = os.environ["APP_PASSWORD"]
+
+    yag = yagmail.SMTP(user=sender_email, password=app_password)
+
+    contents = [
+        f"Hey {recipient_email}\n"
+        + "Welcome to Jumpstart Events, we are thrilled that you have chosen us!\n\n"
+        + "Your Jumpstart Events Team"
+    ]
+
+    yag.send(recipient_email, subject, contents)
 
 
 def is_valid_email(email):
@@ -501,6 +518,7 @@ def create_account(request):
         # Check the content of the 'result' tuple
         if result_key == "data" and result_value:
             user_id = result_value[0].get("user_id")
+            send_confirmation_email(attributes["email"])
             return user_id, "Account creation was successful."
         elif error_value:
             # Now checking the error_value for actual error content
