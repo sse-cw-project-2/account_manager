@@ -45,6 +45,7 @@ attributes_schema = {
         "city",
         "postcode",
         "bio",
+        "status"
     ],
     "artist": [
         "user_id",
@@ -56,6 +57,7 @@ attributes_schema = {
         "genres",
         "spotify_artist_id",
         "bio",
+        "status"
     ],
     "attendee": [
         "user_id",
@@ -66,6 +68,7 @@ attributes_schema = {
         "city",
         "postcode",
         "bio",
+        "status"
     ],
     "event": [
         "event_id",
@@ -75,6 +78,7 @@ attributes_schema = {
         "total_tickets",
         "sold_tickets",
         "artist_ids",
+        "status"
     ],
     "ticket": ["ticket_id", "event_id", "attendee_id", "price", "redeemed", "status"],
 }
@@ -322,7 +326,7 @@ def check_required_attributes(validation_attributes, object_type):
     """
     # Identify attributes required for the function
     total_attributes = set(attributes_schema.get(object_type, []))
-    required_attributes = total_attributes - {"spotify_artist_id"} - {"bio"}
+    required_attributes = total_attributes - {"spotify_artist_id"} - {"bio"} - {"status"}
 
     # Guard against non-defined attributes
     undefined_attributes = [
