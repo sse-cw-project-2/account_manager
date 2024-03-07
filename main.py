@@ -45,6 +45,7 @@ attributes_schema = {
         "city",
         "postcode",
         "bio",
+        "status",
     ],
     "artist": [
         "user_id",
@@ -56,6 +57,7 @@ attributes_schema = {
         "genres",
         "spotify_artist_id",
         "bio",
+        "status",
     ],
     "attendee": [
         "user_id",
@@ -66,6 +68,7 @@ attributes_schema = {
         "city",
         "postcode",
         "bio",
+        "status",
     ],
     "event": [
         "event_id",
@@ -75,6 +78,7 @@ attributes_schema = {
         "total_tickets",
         "sold_tickets",
         "artist_ids",
+        "status",
     ],
     "ticket": ["ticket_id", "event_id", "attendee_id", "price", "redeemed", "status"],
 }
@@ -322,7 +326,9 @@ def check_required_attributes(validation_attributes, object_type):
     """
     # Identify attributes required for the function
     total_attributes = set(attributes_schema.get(object_type, []))
-    required_attributes = total_attributes - {"spotify_artist_id"} - {"bio"}
+    required_attributes = (
+        total_attributes - {"spotify_artist_id"} - {"bio"} - {"status"}
+    )
 
     # Guard against non-defined attributes
     undefined_attributes = [
@@ -643,7 +649,7 @@ def validate_update_request(request):
 
 def delete_account(request):
     """
-    Deletes an account in the Supabase database based on the request parameters.
+    Sets the status of an account in the Supabase database to 'Inactive' based on the request parameters.
 
     Args:
         request: A dictionary containing 'object_type' and 'identifier'.
@@ -660,19 +666,25 @@ def delete_account(request):
     identifier = request["identifier"]
 
     try:
-        # Delete the record from the specified table
+        # Update the status of the record to 'Inactive'
         result = (
             supabase.table(object_type + "s")
-            .delete()
+            .update({"status": "Inactive"})
             .eq("user_id", identifier)
             .execute()
         )
 
-        # Assuming result.data contains the number of deleted rows
-        if result.data:
-            return True, "Account deletion was successful."
+        # Check the result to determine if the update was successful
+        if result.data and len(result.data) > 0:
+            return (
+                True,
+                f"{object_type.capitalize()} account status updated to 'Inactive' successfully.",
+            )
         else:
-            return False, "Account not found or already deleted."
+            return (
+                False,
+                f"{object_type.capitalize()} account not found or update failed.",
+            )
     except Exception as e:
         return False, f"An exception occurred: {str(e)}"
 
