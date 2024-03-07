@@ -114,7 +114,9 @@ jobs:
           --source . \
           --entry-point api_create_account \
           --set-secrets=SUPABASE_URL=projects/950999785047/secrets/SUPABASE_URL:latest \
-          --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY:latest
+          --set-secrets=SUPABASE_KEY=projects/950999785047/secrets/SUPABASE_KEY:latest \
+          --set-secrets=BUSINESS_EMAIL=projects/950999785047/secrets/BUSINESS_EMAIL:latest \
+          --set-secrets=APP_PASSWORD=projects/950999785047/secrets/APP_PASSWORD:latest
 
       - name: Deploy api_update_account
         run: |
