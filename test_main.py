@@ -979,23 +979,25 @@ class TestValidateUpdateRequest(unittest.TestCase):
 class TestDeleteAccount(unittest.TestCase):
     @patch("main.validate_request")
     @patch("main.supabase")
-    def test_valid_delete_request(self, mock_supabase, mock_validate):
-        # Setup mock responses
+    def test_valid_deactivation_request(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
-        mock_result.data = {"deleted": 1}
+        # Simulating an update operation result
+        mock_result.data = [{"status": "Inactive"}]
         mock_result.error = None
-        mock_supabase.table().delete().eq().execute.return_value = mock_result
+        mock_supabase.table().update().eq().execute.return_value = mock_result
 
         request = {
-            "function": "delete",
+            "function": "deactivate",
             "object_type": "artist",
             "identifier": "artist_id_123",
         }
         success, message = delete_account(request)
 
         self.assertTrue(success)
-        self.assertEqual(message, "Account deletion was successful.")
+        self.assertEqual(
+            message, "Artist account status updated to 'Inactive' successfully."
+        )
 
     @patch("main.validate_request")
     def test_invalid_request_structure(self, mock_validate):
@@ -1024,13 +1026,16 @@ class TestDeleteAccount(unittest.TestCase):
         success, message = delete_account(request)
 
         self.assertFalse(success)
-        self.assertIn("Account not found or already deleted.", message)
+        self.assertIn("Artist account not found or update failed.", message)
 
     @patch("main.validate_request")
     @patch("main.supabase")
-    def test_exception_during_delete_operation(self, mock_supabase, mock_validate):
+    def test_exception_during_deactivation_operation(
+        self, mock_supabase, mock_validate
+    ):
         mock_validate.return_value = (True, "")
-        mock_supabase.table().delete().eq().execute.side_effect = Exception(
+        # Mocking the update operation now instead of delete
+        mock_supabase.table().update().eq().execute.side_effect = Exception(
             "Database error"
         )
 
