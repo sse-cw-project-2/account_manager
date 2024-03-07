@@ -649,7 +649,7 @@ def validate_update_request(request):
 
 def delete_account(request):
     """
-    Deletes an account in the Supabase database based on the request parameters.
+    Sets the status of an account in the Supabase database to 'Inactive' based on the request parameters.
 
     Args:
         request: A dictionary containing 'object_type' and 'identifier'.
@@ -666,19 +666,25 @@ def delete_account(request):
     identifier = request["identifier"]
 
     try:
-        # Delete the record from the specified table
+        # Update the status of the record to 'Inactive'
         result = (
             supabase.table(object_type + "s")
-            .delete()
+            .update({"status": "Inactive"})
             .eq("user_id", identifier)
             .execute()
         )
 
-        # Assuming result.data contains the number of deleted rows
-        if result.data:
-            return True, "Account deletion was successful."
+        # Check the result to determine if the update was successful
+        if result.data and len(result.data) > 0:
+            return (
+                True,
+                f"{object_type.capitalize()} account status updated to 'Inactive' successfully.",
+            )
         else:
-            return False, "Account not found or already deleted."
+            return (
+                False,
+                f"{object_type.capitalize()} account not found or update failed.",
+            )
     except Exception as e:
         return False, f"An exception occurred: {str(e)}"
 
